@@ -8,3 +8,6 @@ frontend/node_modules/
 frontend/dist/
 backend/test.db
 .env
+frontend/.angular/
+frontend/node_modules/
+dist/
