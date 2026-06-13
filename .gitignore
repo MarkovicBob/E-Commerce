@@ -11,3 +11,6 @@ backend/test.db
 frontend/.angular/
 frontend/node_modules/
 dist/
+frontend/.angular/
+frontend/node_modules/
+dist/
