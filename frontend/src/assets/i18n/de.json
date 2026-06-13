@@ -1,0 +1,6 @@
+{
+  "nav": { "shop": "Shop", "blog": "Journal", "account": "Konto", "cart": "Warenkorb" },
+  "home": { "hero": "Luxus fuer jeden Tag", "lead": "Kuratierte Premiumstuecke aus mehreren Kategorien.", "cta": "Kollektion ansehen", "featured": "Ausgewaehlt" },
+  "footer": { "copy": "Ein Premium-Onlineshop mit kuratierten Produkten, sicherem Checkout und Referral-Vorteilen." },
+  "newsletter": { "submit": "Abonnieren" }
+}

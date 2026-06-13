@@ -1,0 +1,6 @@
+{
+  "nav": { "shop": "Prodavnica", "blog": "Blog", "account": "Nalog", "cart": "Korpa" },
+  "home": { "hero": "Luksuz za svaki dan", "lead": "Pažljivo odabrani premium komadi kroz više kategorija.", "cta": "Pogledaj kolekciju", "featured": "Izdvojeno" },
+  "footer": { "copy": "Premium online shop sa pažljivo odabranim proizvodima, sigurnom kupovinom i referral pogodnostima." },
+  "newsletter": { "submit": "Prijavi se" }
+}

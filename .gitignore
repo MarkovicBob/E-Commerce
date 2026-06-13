@@ -1,0 +1,10 @@
+__pycache__/
+.pytest_cache/
+.venv/
+*.pyc
+backend/app/media/*
+!backend/app/media/.gitkeep
+frontend/node_modules/
+frontend/dist/
+backend/test.db
+.env

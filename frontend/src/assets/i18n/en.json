@@ -1,0 +1,6 @@
+{
+  "nav": { "shop": "Shop", "blog": "Journal", "account": "Account", "cart": "Cart" },
+  "home": { "hero": "Luxury for every day", "lead": "Curated premium pieces across multiple categories.", "cta": "Shop the collection", "featured": "Featured" },
+  "footer": { "copy": "A premium online shop with curated products, secure checkout and referral rewards." },
+  "newsletter": { "submit": "Subscribe" }
+}
