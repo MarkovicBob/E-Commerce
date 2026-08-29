@@ -10,7 +10,9 @@ def optional_user(authorization: str | None = Header(default=None), db: Session 
     if not authorization or not authorization.startswith("Bearer "):
         return None
     subject = decode_token(authorization.removeprefix("Bearer ").strip())
-    return db.get(User, int(subject)) if subject else None
+    if not subject or not subject.isdigit():
+        return None
+    return db.get(User, int(subject))
 
 
 def current_user(user: User | None = Depends(optional_user)) -> User:

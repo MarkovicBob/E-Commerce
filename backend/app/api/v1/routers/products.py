@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
@@ -72,8 +72,8 @@ def list_products(
     min_rating: float | None = None,
     sort: str | None = None,
     search: str | None = None,
-    page: int = 1,
-    page_size: int = 12,
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=12, ge=1, le=100),
     lang: str = "sr",
     db: Session = Depends(get_db),
 ):

@@ -1,17 +1,31 @@
 from fastapi import APIRouter, Depends
+from sqlalchemy import false, or_
 from sqlalchemy.orm import Session
 
 from app.api.v1.deps import current_user
 from app.db.session import get_db
-from app.models import PromoCode, PromoType, Referral, ReferralStatus
+from app.models import PromoCode, Referral, ReferralStatus
 
 router = APIRouter()
 
 
 @router.get("/me")
 def my_referrals(user=Depends(current_user), db: Session = Depends(get_db)):
-    completed = db.query(Referral).filter_by(referrer_user_id=user.id, status=ReferralStatus.completed).count()
-    coupons = db.query(PromoCode).filter(PromoCode.type.in_([PromoType.referral_referee, PromoType.referral_referrer])).all()
+    referrals = db.query(Referral).filter_by(referrer_user_id=user.id).all()
+    completed = sum(1 for r in referrals if r.status == ReferralStatus.completed)
+    # Only this user's own coupons: rewards earned for their referrals, plus the
+    # welcome code minted for them at registration.
+    reward_ids = [r.referrer_reward_code_id for r in referrals if r.referrer_reward_code_id]
+    coupons = (
+        db.query(PromoCode)
+        .filter(
+            or_(
+                PromoCode.id.in_(reward_ids) if reward_ids else false(),
+                PromoCode.code == f"WELCOME10-{user.referral_code}",
+            )
+        )
+        .all()
+    )
     return {
         "referral_code": user.referral_code,
         "referral_link": f"/register?ref={user.referral_code}",

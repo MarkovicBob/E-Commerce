@@ -4,12 +4,13 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app.api.v1.deps import admin_user, current_user, optional_user, session_id
+from app.api.v1.deps import current_user, optional_user, session_id
 from app.api.v1.routers.cart import get_or_create_cart
 from app.core.config import settings
 from app.db.session import get_db
-from app.models import CartItem, Order, OrderItem, OrderStatus, ProductVariant
+from app.models import Order, OrderItem, OrderStatus
 from app.services.payment import payment_provider
+from app.services.promo import discount_for, get_valid_promo
 from app.services.referrals import complete_referral_if_needed
 
 router = APIRouter()
@@ -44,17 +45,20 @@ def order_out(order: Order) -> dict:
 
 @router.post("")
 def create_order(payload: OrderIn, user=Depends(optional_user), sid: str | None = Depends(session_id), db: Session = Depends(get_db)):
-    cart = get_or_create_cart(db, user, sid or "guest")
+    cart = get_or_create_cart(db, user, sid)
     if not cart.items:
         raise HTTPException(400, "Cart is empty")
     for item in cart.items:
-        stock = item.variant.stock_quantity if item.variant else item.product.stock_quantity
-        if stock < item.quantity:
+        # A variant carries its own stock, but it is still drawn from the product's stock.
+        if item.product.stock_quantity < item.quantity:
             raise HTTPException(400, f"Not enough stock for {item.product.name}")
-    subtotal = sum(float(item.unit_price) * item.quantity for item in cart.items)
-    discount = subtotal * 0.10 if cart.promo_code else 0
+        if item.variant and item.variant.stock_quantity < item.quantity:
+            raise HTTPException(400, f"Not enough stock for {item.product.name}")
+    subtotal = round(sum(float(item.unit_price) * item.quantity for item in cart.items), 2)
+    promo = get_valid_promo(db, cart.promo_code)
+    discount = discount_for(promo, subtotal)
     shipping_cost = settings.express_shipping_cost if payload.shipping_method == "express" else settings.standard_shipping_cost
-    total = subtotal - discount + shipping_cost
+    total = round(subtotal - discount + shipping_cost, 2)
     if not payment_provider.charge(total, payload.payment_method):
         raise HTTPException(400, "Payment failed")
     order = Order(
@@ -67,7 +71,7 @@ def create_order(payload: OrderIn, user=Depends(optional_user), sid: str | None 
         total=total,
         shipping_address=payload.shipping_address,
         payment_method=payload.payment_method,
-        promo_code_used=cart.promo_code,
+        promo_code_used=promo.code if promo else None,
     )
     db.add(order)
     db.flush()
@@ -85,6 +89,8 @@ def create_order(payload: OrderIn, user=Depends(optional_user), sid: str | None 
             item.variant.stock_quantity -= item.quantity
         item.product.stock_quantity -= item.quantity
         db.delete(item)
+    if promo:
+        promo.times_used += 1
     cart.promo_code = None
     if user:
         complete_referral_if_needed(db, user.id)

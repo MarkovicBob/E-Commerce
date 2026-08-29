@@ -43,6 +43,8 @@ def create_review(product_id: int, payload: ReviewIn, user=Depends(current_user)
     bought = order and db.query(OrderItem).filter_by(order_id=order.id, product_id=product_id).first()
     if not bought:
         raise HTTPException(403, "Review requires verified purchase")
+    if db.query(Review).filter_by(product_id=product_id, user_id=user.id, order_id=payload.order_id).first():
+        raise HTTPException(409, "You have already reviewed this product for this order")
     review = Review(product_id=product_id, user_id=user.id, order_id=payload.order_id, rating=payload.rating, comment=payload.comment)
     db.add(review)
     db.commit()

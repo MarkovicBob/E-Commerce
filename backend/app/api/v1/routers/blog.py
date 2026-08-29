@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
@@ -22,7 +22,7 @@ def blog_out(post: BlogPost, lang: str = "sr") -> dict:
 
 
 @router.get("")
-def list_blog(category: str | None = None, lang: str = "sr", page: int = 1, page_size: int = 12, db: Session = Depends(get_db)):
+def list_blog(category: str | None = None, lang: str = "sr", page: int = Query(default=1, ge=1), page_size: int = Query(default=12, ge=1, le=100), db: Session = Depends(get_db)):
     query = db.query(BlogPost).filter_by(is_published=True)
     if category:
         query = query.filter_by(category=category)

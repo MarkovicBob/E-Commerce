@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -54,7 +54,7 @@ def stats(db: Session = Depends(get_db)):
 
 
 @router.get("/users")
-def users(page: int = 1, page_size: int = 20, db: Session = Depends(get_db)):
+def users(page: int = Query(default=1, ge=1), page_size: int = Query(default=20, ge=1, le=100), db: Session = Depends(get_db)):
     query = db.query(User)
     total = query.count()
     items = query.offset((page - 1) * page_size).limit(page_size).all()
@@ -72,7 +72,7 @@ def update_role(user_id: int, payload: RoleIn, db: Session = Depends(get_db)):
 
 
 @router.get("/orders")
-def admin_orders(status: OrderStatus | None = None, page: int = 1, page_size: int = 20, db: Session = Depends(get_db)):
+def admin_orders(status: OrderStatus | None = None, page: int = Query(default=1, ge=1), page_size: int = Query(default=20, ge=1, le=100), db: Session = Depends(get_db)):
     query = db.query(Order)
     if status:
         query = query.filter_by(status=status)
