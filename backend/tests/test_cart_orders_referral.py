@@ -28,10 +28,10 @@ def test_cart_and_order_flow():
     assert add.status_code == 200
     order = client.post(
         "/api/v1/orders",
-        json={"shipping_address": {"full_name": "Buyer", "street": "Main", "city": "Belgrade", "postal_code": "11000", "country": "RS", "phone": "1"}, "shipping_method": "standard", "payment_method": "card"},
+        json={"shipping_address": {"full_name": "Buyer", "street": "Main", "city": "Belgrade", "postal_code": "11000", "country": "RS", "phone": "+381600000"}, "shipping_method": "standard", "payment_method": "card"},
         headers=headers,
     )
-    assert order.status_code == 200
+    assert order.status_code == 201
     assert order.json()["order_number"].startswith("LC-")
 
 

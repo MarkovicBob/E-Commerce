@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1200" viewBox="0 0 900 1200" role="img" aria-label="Luxe product placeholder">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#3a3024"/><stop offset="1" stop-color="#15130f"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="38%" r="58%">
+      <stop stop-color="#c7a86a" stop-opacity=".42"/><stop offset="1" stop-color="#c7a86a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="object" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#f3ead9"/><stop offset=".48" stop-color="#c7a86a"/><stop offset="1" stop-color="#3a3024"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="1200" fill="url(#bg)"/>
+  <rect width="900" height="1200" fill="url(#glow)"/>
+  <circle cx="450" cy="365" r="260" fill="none" stroke="#c7a86a" stroke-opacity=".3" stroke-width="2"/>
+  <ellipse cx="450" cy="895" rx="270" ry="64" fill="#000" opacity=".3"/>
+  <path d="M255 815 L318 385 Q328 320 392 320 H508 Q572 320 582 385 L645 815 Q654 875 594 875 H306 Q246 875 255 815Z" fill="url(#object)"/>
+  <path d="M360 348 Q370 222 450 222 Q530 222 540 348" fill="none" stroke="#f3ead9" stroke-opacity=".8" stroke-width="28" stroke-linecap="round"/>
+  <circle cx="450" cy="595" r="76" fill="none" stroke="#f3ead9" stroke-opacity=".82" stroke-width="3"/>
+  <text x="450" y="613" fill="#f3ead9" font-family="Georgia, serif" font-size="48" text-anchor="middle" letter-spacing="8">L</text>
+  <text x="450" y="1060" fill="#f3ead9" fill-opacity=".45" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" letter-spacing="7">LUXE COMMERCE</text>
+</svg>

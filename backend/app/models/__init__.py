@@ -64,6 +64,7 @@ class Address(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    label: Mapped[str | None] = mapped_column(String(80))
     full_name: Mapped[str] = mapped_column(String(255))
     street: Mapped[str] = mapped_column(String(255))
     city: Mapped[str] = mapped_column(String(120))
@@ -79,7 +80,9 @@ class Category(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(255))
     slug: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    description: Mapped[str | None] = mapped_column(Text)
     image_url: Mapped[str | None] = mapped_column(String(500))
+    position: Mapped[int] = mapped_column(Integer, default=0)
     parent_category_id: Mapped[int | None] = mapped_column(ForeignKey("categories.id"))
     translations: Mapped[list["CategoryTranslation"]] = relationship(cascade="all, delete-orphan")
 
@@ -92,6 +95,7 @@ class CategoryTranslation(Base):
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"))
     language_code: Mapped[str] = mapped_column(String(2), index=True)
     name: Mapped[str] = mapped_column(String(255))
+    description: Mapped[str | None] = mapped_column(Text)
 
 
 class Product(Base):
@@ -108,6 +112,12 @@ class Product(Base):
     stock_quantity: Mapped[int] = mapped_column(Integer, default=0)
     status: Mapped[ProductStatus] = mapped_column(Enum(ProductStatus), default=ProductStatus.active)
     average_rating: Mapped[float] = mapped_column(Numeric(3, 2), default=0)
+    review_count: Mapped[int] = mapped_column(Integer, default=0)
+    # Maintained on checkout so "popular" can sort by what actually sells.
+    sales_count: Mapped[int] = mapped_column(Integer, default=0)
+    is_featured: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Free-form spec sheet ({"Material": "Sapphire crystal", ...}) for the product tabs.
+    specs: Mapped[dict | None] = mapped_column(JSON().with_variant(JSONB, "postgresql"))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
 
     category: Mapped[Category] = relationship()
@@ -185,6 +195,8 @@ class Order(Base):
     total: Mapped[float] = mapped_column(Numeric(12, 2))
     shipping_address: Mapped[dict] = mapped_column(JSON().with_variant(JSONB, "postgresql"))
     payment_method: Mapped[str] = mapped_column(String(50))
+    shipping_method: Mapped[str] = mapped_column(String(50), default="standard")
+    contact_email: Mapped[str | None] = mapped_column(String(255), index=True)
     promo_code_used: Mapped[str | None] = mapped_column(String(80))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
     items: Mapped[list["OrderItem"]] = relationship(cascade="all, delete-orphan")
@@ -212,6 +224,8 @@ class Review(Base):
     order_id: Mapped[int] = mapped_column(ForeignKey("orders.id"))
     rating: Mapped[int] = mapped_column(Integer)
     comment: Mapped[str | None] = mapped_column(Text)
+    comment_en: Mapped[str | None] = mapped_column(Text)
+    comment_de: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
     is_approved: Mapped[bool] = mapped_column(Boolean, default=False)
 

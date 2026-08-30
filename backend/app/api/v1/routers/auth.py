@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from sqlalchemy.orm import Session
 
 from app.api.v1.deps import current_user
@@ -15,10 +15,27 @@ RESET_TOKEN_MINUTES = 30
 
 class RegisterIn(BaseModel):
     email: EmailStr
-    password: str
-    full_name: str
-    phone: str | None = None
+    password: str = Field(min_length=8, max_length=128)
+    full_name: str = Field(min_length=2, max_length=255)
+    phone: str | None = Field(default=None, max_length=50)
     referral_code: str | None = None
+
+    @field_validator("password")
+    @classmethod
+    def strong_enough(cls, value: str) -> str:
+        if value.isalpha() or value.isdigit():
+            raise ValueError("Password must mix letters and numbers")
+        return value
+
+
+class ProfileIn(BaseModel):
+    full_name: str = Field(min_length=2, max_length=255)
+    phone: str | None = Field(default=None, max_length=50)
+
+
+class ChangePasswordIn(BaseModel):
+    current_password: str
+    new_password: str = Field(min_length=8, max_length=128)
 
 
 class LoginIn(BaseModel):
@@ -40,7 +57,15 @@ class ResetPasswordIn(BaseModel):
 
 
 def user_out(user: User) -> dict:
-    return {"id": user.id, "email": user.email, "full_name": user.full_name, "role": user.role.value, "referral_code": user.referral_code}
+    return {
+        "id": user.id,
+        "email": user.email,
+        "full_name": user.full_name,
+        "phone": user.phone,
+        "role": user.role.value,
+        "referral_code": user.referral_code,
+        "created_at": user.created_at,
+    }
 
 
 def set_refresh_cookie(response: Response, refresh_token: str) -> None:
@@ -65,11 +90,16 @@ def tokens(user: User) -> dict:
 
 @router.post("/register")
 def register(payload: RegisterIn, response: Response, db: Session = Depends(get_db)):
-    if db.query(User).filter_by(email=payload.email).first():
+    email = payload.email.lower()
+    if db.query(User).filter_by(email=email).first():
         raise HTTPException(400, "Email already registered")
-    referrer = db.query(User).filter_by(referral_code=payload.referral_code).first() if payload.referral_code else None
+    referrer = (
+        db.query(User).filter_by(referral_code=payload.referral_code.strip().upper()).first()
+        if payload.referral_code
+        else None
+    )
     user = User(
-        email=payload.email,
+        email=email,
         hashed_password=hash_password(payload.password),
         full_name=payload.full_name,
         phone=payload.phone,
@@ -89,7 +119,7 @@ def register(payload: RegisterIn, response: Response, db: Session = Depends(get_
 
 @router.post("/login")
 def login(payload: LoginIn, response: Response, db: Session = Depends(get_db)):
-    user = db.query(User).filter_by(email=payload.email).first()
+    user = db.query(User).filter_by(email=payload.email.lower()).first()
     if not user or not verify_password(payload.password, user.hashed_password):
         raise HTTPException(401, "Invalid credentials")
     result = tokens(user)
@@ -119,7 +149,7 @@ def google_placeholder():
 
 @router.post("/forgot-password")
 def forgot_password(payload: ForgotPasswordIn, db: Session = Depends(get_db)):
-    user = db.query(User).filter_by(email=payload.email).first()
+    user = db.query(User).filter_by(email=payload.email.lower()).first()
     response = {"detail": "If the account exists, a reset link has been sent"}
     if not user:
         # Same response either way so the endpoint cannot be used to enumerate accounts.
@@ -143,6 +173,30 @@ def reset_password(payload: ResetPasswordIn, db: Session = Depends(get_db)):
     return {"detail": "Password reset completed"}
 
 
+@router.post("/logout")
+def logout(response: Response):
+    response.delete_cookie("refresh_token")
+    return {"detail": "Logged out"}
+
+
 @router.get("/me")
 def me(user: User = Depends(current_user)):
     return user_out(user)
+
+
+@router.put("/me")
+def update_profile(payload: ProfileIn, user: User = Depends(current_user), db: Session = Depends(get_db)):
+    user.full_name = payload.full_name
+    user.phone = payload.phone
+    db.commit()
+    db.refresh(user)
+    return user_out(user)
+
+
+@router.put("/me/password")
+def change_password(payload: ChangePasswordIn, user: User = Depends(current_user), db: Session = Depends(get_db)):
+    if not verify_password(payload.current_password, user.hashed_password):
+        raise HTTPException(400, "Current password is incorrect")
+    user.hashed_password = hash_password(payload.new_password)
+    db.commit()
+    return {"detail": "Password updated"}

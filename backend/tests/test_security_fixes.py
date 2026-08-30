@@ -5,7 +5,7 @@ from app.main import app
 from app.models import PromoCode, PromoType
 from tests.test_cart_orders_referral import setup_shop
 
-ADDRESS = {"full_name": "Buyer", "street": "Main", "city": "Belgrade", "postal_code": "11000", "country": "RS", "phone": "1"}
+ADDRESS = {"full_name": "Buyer", "street": "Main", "city": "Belgrade", "postal_code": "11000", "country": "RS", "phone": "+381600000"}
 
 
 def login(client, email="buyer@example.com", password="Secret123!"):
@@ -62,11 +62,15 @@ def test_promo_discount_matches_between_cart_and_order():
     # The cart used to always report a 0 discount while the order silently applied 10%.
     assert cart["subtotal"] == 2000
     assert cart["discount_total"] == 500
-    assert cart["total"] == 1500
+    # The cart total now includes estimated shipping, so it matches the checkout summary.
+    assert cart["shipping_cost"] == 500
+    assert cart["total"] == 2000
 
     order = client.post("/api/v1/orders", json={"shipping_address": ADDRESS, "shipping_method": "standard", "payment_method": "card"}, headers=headers).json()
     assert order["discount_total"] == cart["discount_total"]
-    assert order["total"] == cart["total"] + order["shipping_cost"]
+    # The cart quotes the same standard shipping the order then charges, so the totals match.
+    assert order["shipping_cost"] == cart["shipping_cost"]
+    assert order["total"] == cart["total"]
 
 
 def test_exhausted_promo_is_rejected():

@@ -1,10 +1,26 @@
 from fastapi import APIRouter
 
-from app.api.v1.routers import admin, auth, blog, cart, categories, newsletter, orders, products, referrals, reviews, wishlist
+from app.api.v1.routers import (
+    addresses,
+    admin,
+    auth,
+    blog,
+    cart,
+    categories,
+    newsletter,
+    orders,
+    placeholders,
+    products,
+    referrals,
+    reviews,
+    wishlist,
+)
 
 api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
+api_router.include_router(addresses.router, prefix="/addresses", tags=["addresses"])
 api_router.include_router(categories.router, prefix="/categories", tags=["categories"])
+api_router.include_router(placeholders.router, prefix="/placeholders", tags=["placeholders"])
 api_router.include_router(products.router, prefix="/products", tags=["products"])
 api_router.include_router(cart.router, prefix="/cart", tags=["cart"])
 api_router.include_router(orders.router, prefix="/orders", tags=["orders"])

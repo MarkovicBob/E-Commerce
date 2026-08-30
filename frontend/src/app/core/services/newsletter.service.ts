@@ -4,5 +4,7 @@ import { ApiService } from './api.service';
 @Injectable({ providedIn: 'root' })
 export class NewsletterService {
   private readonly api = inject(ApiService);
-  subscribe(email: string) { return this.api.post('/newsletter/subscribe', { email }); }
+  subscribe(email: string) {
+    return this.api.post<{ detail: string }>('/newsletter/subscribe', { email });
+  }
 }

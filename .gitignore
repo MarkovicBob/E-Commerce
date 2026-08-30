@@ -1,16 +1,24 @@
+# Python
 __pycache__/
+*.pyc
 .pytest_cache/
 .venv/
-*.pyc
+venv/
+
+# Local databases (recreated by alembic + the seed script)
+*.db
+backend/dev.db
+backend/test.db
+
+# Uploaded media, but keep the folder itself
 backend/app/media/*
 !backend/app/media/.gitkeep
-frontend/node_modules/
-frontend/dist/
-backend/test.db
+
+# Node / Angular
+node_modules/
+dist/
+.angular/
+
+# Environment files: only the .example templates are committed
 .env
-frontend/.angular/
-frontend/node_modules/
-dist/
-frontend/.angular/
-frontend/node_modules/
-dist/
+.env.local
