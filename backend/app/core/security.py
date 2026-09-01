@@ -19,11 +19,13 @@ def hash_password(password: str) -> str:
 
 
 def create_token(subject: str, token_type: str, minutes: int | None = None, days: int | None = None) -> str:
+    # Access i refresh token koriste isti potpis, ali se razlikuju po "type" i vremenu isteka.
     expire = datetime.now(timezone.utc) + (timedelta(days=days) if days else timedelta(minutes=minutes or 30))
     return jwt.encode({"sub": subject, "type": token_type, "exp": expire}, settings.secret_key, algorithm=ALGORITHM)
 
 
 def decode_token(token: str, expected_type: str = "access") -> str | None:
+    # Provera tipa sprecava da se refresh token koristi kao access token na zasticenoj ruti.
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[ALGORITHM])
     except JWTError:

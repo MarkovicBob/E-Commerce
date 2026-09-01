@@ -52,6 +52,8 @@ def lock_stock_rows(db: Session, cart) -> None:
     the two transactions. Rows are locked in id order to avoid deadlocking
     against another checkout that shares products.
     """
+    # SELECT FOR UPDATE zakljucava redove do kraja transakcije i time sprecava
+    # da dva checkout-a istovremeno prodaju poslednji komad istog proizvoda.
     product_ids = sorted({item.product_id for item in cart.items})
     variant_ids = sorted({item.variant_id for item in cart.items if item.variant_id})
     if product_ids:
@@ -135,6 +137,7 @@ def create_order(
     if not user and not payload.contact_email:
         raise HTTPException(400, "A contact email is required for guest orders")
 
+    # Stanje zaliha proveravamo tek nakon zakljucavanja, dok su vrednosti pouzdane.
     lock_stock_rows(db, cart)
     for item in cart.items:
         if available_stock(item.product, item.variant) < item.quantity:
@@ -151,6 +154,7 @@ def create_order(
     shipping_cost = shipping_cost_for(payload.shipping_method)
     total = round(subtotal - discount + shipping_cost, 2)
 
+    # Payment provider je apstrakcija: mock se kasnije moze zameniti Stripe implementacijom.
     try:
         payment_provider.charge(total, payload.payment_method)
     except PaymentError as exc:
@@ -195,6 +199,7 @@ def create_order(
     cart.promo_code = None
     if user:
         complete_referral_if_needed(db, user.id)
+    # Porudzbina, stavke, zalihe, kupon i referral ulaze u jedan atomski commit.
     db.commit()
     db.refresh(order)
     return order_out(order, db, lang)

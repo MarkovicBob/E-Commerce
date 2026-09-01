@@ -21,6 +21,8 @@ def optional_user(authorization: str | None = Header(default=None), db: Session 
     error, not a guest: answering 200 would silently move a signed-in shopper's
     cart into an anonymous one and rob the client of the 401 it refreshes on.
     """
+    # Ako zaglavlje ne postoji, korisnik je stvarno gost. Ako token postoji ali
+    # nije ispravan, vracamo 401 da frontend moze da pokrene refresh token tok.
     if authorization is None:
         return None
     if not authorization.startswith("Bearer "):
@@ -30,6 +32,7 @@ def optional_user(authorization: str | None = Header(default=None), db: Session 
     if not token:
         raise unauthorized("Bearer token is empty")
 
+    # JWT "sub" sadrzi ID korisnika; dependency zatim ucitava svez nalog iz baze.
     subject = decode_token(token)
     if not subject or not subject.isdigit():
         raise unauthorized()

@@ -69,6 +69,7 @@ def user_out(user: User) -> dict:
 
 
 def set_refresh_cookie(response: Response, refresh_token: str) -> None:
+    # httpOnly stiti refresh token od JavaScript pristupa u browseru.
     response.set_cookie(
         "refresh_token",
         refresh_token,
@@ -129,7 +130,7 @@ def login(payload: LoginIn, response: Response, db: Session = Depends(get_db)):
 
 @router.post("/refresh")
 def refresh(payload: RefreshIn, request: Request, response: Response, db: Session = Depends(get_db)):
-    # Fall back to the httpOnly cookie set at login, which the client cannot read itself.
+    # Mobilni klijent moze poslati token u telu, a browser ga obicno salje kroz httpOnly cookie.
     token = payload.refresh_token or request.cookies.get("refresh_token") or ""
     subject = decode_token(token, "refresh")
     if not subject or not subject.isdigit():
@@ -137,6 +138,7 @@ def refresh(payload: RefreshIn, request: Request, response: Response, db: Sessio
     user = db.get(User, int(subject))
     if not user:
         raise HTTPException(401, "Invalid refresh token")
+    # Rotacija izdaje i novi refresh token, umesto da stalno vraca isti token.
     result = tokens(user)
     set_refresh_cookie(response, result["refresh_token"])
     return result

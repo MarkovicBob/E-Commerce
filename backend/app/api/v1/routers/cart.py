@@ -244,6 +244,7 @@ def merge_cart(
     if sid:
         guest = db.query(Cart).filter(Cart.user_id.is_(None), Cart.session_id == sid).first()
         if guest and guest.id != target.id:
+            # Par (product_id, variant_id) jedinstveno predstavlja istu stavku u korpi.
             existing = {(item.product_id, item.variant_id): item for item in target.items}
             for item in list(guest.items):
                 match = existing.get((item.product_id, item.variant_id))
@@ -251,9 +252,8 @@ def merge_cart(
                     stock = available_stock(match.product, match.variant)
                     match.quantity = min(match.quantity + item.quantity, MAX_QUANTITY, max(stock, 1))
                 else:
-                    # Copy rather than re-parent: `Cart.items` is delete-orphan, so an item
-                    # left in the guest collection is deleted with the guest cart even after
-                    # its cart_id has been pointed at the target.
+                    # Pravimo novu stavku umesto promene cart_id, jer delete-orphan veza moze
+                    # obrisati staru stavku zajedno sa gostujucom korpom.
                     db.add(
                         CartItem(
                             cart_id=target.id,

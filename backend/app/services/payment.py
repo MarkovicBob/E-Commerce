@@ -25,6 +25,7 @@ class PaymentResult:
 
 
 class PaymentProvider(Protocol):
+    # Protocol definise ugovor koji moraju da prate mock i buduci pravi payment provideri.
     def charge(self, amount: float, method: str) -> PaymentResult:
         ...
 
