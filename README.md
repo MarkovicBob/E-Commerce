@@ -3,6 +3,19 @@
 Full-stack premium e-commerce monorepo built from `SPEC.md`: Angular 18 standalone frontend,
 FastAPI backend, PostgreSQL, Alembic, seed data, Docker and tests.
 
+## Screenshots
+
+<a href="https://portfoliobob.netlify.app/projects/luxe/demo.mp4"><img src="https://portfoliobob.netlify.app/projects/luxe/poster.webp" alt="Demo video" width="100%"></a>
+
+<sub>▶ Click the image to watch the demo video · more on <a href="https://portfoliobob.netlify.app/#projects">portfoliobob.netlify.app</a></sub>
+
+<table>
+<tr><td width="50%"><img src="https://portfoliobob.netlify.app/projects/luxe/1.webp" alt="Screenshot 1" width="100%"></td><td width="50%"><img src="https://portfoliobob.netlify.app/projects/luxe/2.webp" alt="Screenshot 2" width="100%"></td></tr>
+<tr><td width="50%"><img src="https://portfoliobob.netlify.app/projects/luxe/3.webp" alt="Screenshot 3" width="100%"></td><td width="50%"><img src="https://portfoliobob.netlify.app/projects/luxe/4.webp" alt="Screenshot 4" width="100%"></td></tr>
+<tr><td width="50%"><img src="https://portfoliobob.netlify.app/projects/luxe/5.webp" alt="Screenshot 5" width="100%"></td><td width="50%"><img src="https://portfoliobob.netlify.app/projects/luxe/6.webp" alt="Screenshot 6" width="100%"></td></tr>
+<tr><td width="50%"><img src="https://portfoliobob.netlify.app/projects/luxe/7.webp" alt="Screenshot 7" width="100%"></td><td width="50%"><img src="https://portfoliobob.netlify.app/projects/luxe/8.webp" alt="Screenshot 8" width="100%"></td></tr>
+</table>
+
 ## Run with Docker
 
 ```bash
